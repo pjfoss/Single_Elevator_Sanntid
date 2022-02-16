@@ -6,6 +6,8 @@ import (
 	"fmt"
 )
 
+//yo, test Thale
+
 func main() {
 	test.Testfunc()
 	numFloors := 4
