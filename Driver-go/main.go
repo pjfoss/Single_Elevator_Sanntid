@@ -2,11 +2,12 @@ package main
 
 import (
 	"Driver-go/elevio"
+	"Driver-go/test"
 	"fmt"
 )
 
 func main() {
-
+	test.Testfunc()
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
@@ -33,6 +34,11 @@ func main() {
 
 		case a := <-drv_floors:
 			fmt.Printf("%+v\n", a)
+			if d == elevio.MD_Up {
+				elevio.SetButtonLamp(elevio.BT_HallUp, a, false)
+			} else if d == elevio.MD_Down {
+				elevio.SetButtonLamp(elevio.BT_HallDown, a, false)
+			}
 			if a == numFloors-1 {
 				d = elevio.MD_Down
 			} else if a == 0 {
