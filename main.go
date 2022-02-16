@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+//Test test test
+
 func readTCP(conn net.Conn, r chan string) {
 	fmt.Println("readTCP")
 	buf := make([]byte, 2048)
