@@ -14,7 +14,7 @@ func main() {
 	var d elevio.MotorDirection = elevio.MD_Up
 	//elevio.SetMotorDirection(d)
 	//elevio.SetMotorDirection(d)
-	//helt nytt
+	//helt nytt, helt nytt igjen
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
