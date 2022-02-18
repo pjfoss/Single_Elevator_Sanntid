@@ -1,13 +1,13 @@
 package main
 
 import (
+	"Driver-go/elevator"
 	"Driver-go/elevio"
-	"Driver-go/test"
 	"fmt"
 )
 
 func main() {
-	test.Testfunc()
+	elevator.Testfunc()
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
