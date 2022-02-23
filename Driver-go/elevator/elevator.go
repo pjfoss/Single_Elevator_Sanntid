@@ -2,6 +2,7 @@ package elevator
 
 import (
 	"Driver-go/elevio"
+	"fmt"
 )
 
 type Elevator struct {
@@ -19,7 +20,8 @@ func (e Elevator) SetFloor(floor int) {
 	e.currentFloor = floor
 }
 
-func (e Elevator) driveTo(floor int) {
+func (e *Elevator) driveTo(order elevio.ButtonEvent) {
+	floor := order.Floor
 	if e.GetCurrentFloor() == floor {
 		return
 	}
@@ -28,5 +30,8 @@ func (e Elevator) driveTo(floor int) {
 	} else {
 		elevio.SetMotorDirection(elevio.MD_Up)
 	}
+}
 
+func Testfunc() {
+	fmt.Println("Sup!")
 }
