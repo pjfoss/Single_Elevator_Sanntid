@@ -2,13 +2,14 @@ package main
 
 import (
 	"Driver-go/elevio"
-	"Driver-go/test"
+	"Driver-go/orders"
 	"fmt"
 )
 
 func main() {
-	test.Testfunc()
 	numFloors := 4
+
+	var orderPanel [orders.ConstNumFloors][3]int
 
 	elevio.Init("localhost:15657", numFloors)
 
@@ -25,6 +26,8 @@ func main() {
 	go elevio.PollFloorSensor(drv_floors)
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
+
+	go orders.UpdateOrders(orderPanel, drv_buttons)
 
 	for {
 		select {
