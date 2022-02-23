@@ -5,16 +5,19 @@ import "Driver-go/elevio"
 const ConstNumFloors int = 4
 
 const (
+	//OT = OrderType
 	OT_NoOrder = 0
 	OT_Order   = 1
 )
 const (
+	//CT = CostType
 	CT_DistanceCost        = 10
 	CT_DirSwitchCost       = 100
 	CT_DoubleDirSwitchCost = 1000
 )
 
 func UpdateOrders(orderPanel [ConstNumFloors][3]int, receiver <-chan elevio.ButtonEvent) {
+	//Updates orderPanel matrix when receiver channel gets button calls
 	for {
 		orders := <-receiver
 		orderPanel[orders.Floor][orders.Button] = OT_Order
@@ -22,6 +25,7 @@ func UpdateOrders(orderPanel [ConstNumFloors][3]int, receiver <-chan elevio.Butt
 }
 
 func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection elevio.MotorDirection) int {
+	// Based on costed scenarios: on the order floor,above or below floor, type of requirede turns - calculate the cost of the given order
 	var cost int = 0
 	orderFloor := order.Floor
 	if elevFloor == orderFloor {
@@ -55,14 +59,15 @@ func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection e
 }
 
 func PriorityOrder(orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
+	//Calculate for given elevator which order it should take using calculateOrderCost for each current order.
 	var priorityOrder elevio.ButtonEvent
-	var minCost int = 10000
-	for n := 0; n < len(orderPanel); n++ {
-		for i := 0; i < len(orderPanel[0]); i++ {
-			if orderPanel[n][i] != OT_NoOrder {
+	var minCost int = 10000 //change to infinity <3
+	for floor := 0; floor < len(orderPanel); floor++ {
+		for btn := 0; btn < len(orderPanel[0]); btn++ {
+			if orderPanel[floor][btn] != OT_NoOrder {
 				order := elevio.ButtonEvent{
-					Floor:  n,
-					Button: elevio.ButtonType(orderPanel[n][i]),
+					Floor:  floor,
+					Button: elevio.ButtonType(orderPanel[floor][btn]),
 				}
 				orderCost := calculateOrderCost(order, elevFloor, elevDirection)
 				if orderCost < minCost {
@@ -72,6 +77,7 @@ func PriorityOrder(orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirecti
 			}
 		}
 	}
+	//TODO: find solution in case of no orders
 	return priorityOrder
 }
 
