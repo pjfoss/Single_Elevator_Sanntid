@@ -1,6 +1,9 @@
 package orders
 
-import "Driver-go/elevio"
+import (
+	"Driver-go/elevio"
+	"time"
+)
 
 const ConstNumFloors int = 4
 
@@ -61,6 +64,7 @@ func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection e
 
 func priorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
 	//Calculate for given elevator which order it should take using calculateOrderCost for each current order.
+	//fmt.Printf("Y00")
 	var priorityOrder elevio.ButtonEvent = elevio.ButtonEvent{
 		Floor:  -1,
 		Button: -1,
@@ -81,12 +85,15 @@ func priorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirect
 			}
 		}
 	}
+	//fmt.Println(string(priorityOrder.Floor))
 	return priorityOrder
 }
 
 func PollPriorityOrder(priOrderChan chan elevio.ButtonEvent, orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
 	for {
+		//fmt.Printf("Yoo")
 		priOrderChan <- priorityOrder(&orderPanel, elevFloor, elevDirection)
+		time.Sleep(time.Millisecond)
 	}
 }
 

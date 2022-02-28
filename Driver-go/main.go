@@ -12,6 +12,7 @@ func main() {
 	var myElevator elevator.Elevator
 	var orderPanel [orders.ConstNumFloors][3]int
 
+
 	elevio.Init("localhost:15657", numFloors)
 
 	myElevator.SetDirection(elevio.MD_Up)
@@ -19,5 +20,5 @@ func main() {
 	//elevio.SetMotorDirection(d)
 	//helt nytt, helt nytt igjen
 
-	go elevFSM.RunElevFSM(numFloors, myElevator, orderPanel)
+	elevFSM.RunElevFSM(numFloors, myElevator, orderPanel)
 }

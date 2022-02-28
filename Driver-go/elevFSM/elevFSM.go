@@ -9,6 +9,12 @@ import (
 
 func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.ConstNumFloors][3]int) {
 
+	for f := 0; f < numFloors; f++ {
+		for b := 0; b < 3; b++ {
+			elevio.SetButtonLamp(elevio.ButtonType(b), f, false)
+		}
+	}
+
 	priOrderChan := make(chan elevio.ButtonEvent)
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -27,12 +33,10 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 		select {
 
 		case p := <-priOrderChan:
+			//fmt.Printf("%+v\n", p)
 			if p.Floor != -1 {
 				myElevator.DriveTo(p)
 			}
-
-		case a := <-drv_buttons:
-			fmt.Printf("%+v\n", a)
 
 		case a := <-drv_floors:
 			myElevator.SetFloor(a)
@@ -59,11 +63,6 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 
 		case a := <-drv_stop:
 			fmt.Printf("%+v\n", a)
-			for f := 0; f < numFloors; f++ {
-				for b := elevio.ButtonType(0); b < 3; b++ {
-					elevio.SetButtonLamp(b, f, false)
-				}
-			}
 		}
 	}
 }
