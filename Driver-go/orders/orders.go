@@ -60,7 +60,10 @@ func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection e
 
 func PriorityOrder(orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
 	//Calculate for given elevator which order it should take using calculateOrderCost for each current order.
-	var priorityOrder elevio.ButtonEvent
+	var priorityOrder elevio.ButtonEvent = elevio.ButtonEvent{
+		Floor:  -1,
+		Button: -1,
+	}
 	var minCost int = 10000 //change to infinity <3
 	for floor := 0; floor < len(orderPanel); floor++ {
 		for btn := 0; btn < len(orderPanel[0]); btn++ {
@@ -77,7 +80,6 @@ func PriorityOrder(orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirecti
 			}
 		}
 	}
-	//TODO: find solution in case of no orders
 	return priorityOrder
 }
 
