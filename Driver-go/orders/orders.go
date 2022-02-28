@@ -16,11 +16,12 @@ const (
 	CT_DoubleDirSwitchCost = 1000
 )
 
-func UpdateOrders(orderPanel [ConstNumFloors][3]int, receiver <-chan elevio.ButtonEvent) {
+func UpdateOrders(orderPanel *[ConstNumFloors][3]int, receiver <-chan elevio.ButtonEvent) {
 	//Updates orderPanel matrix when receiver channel gets button calls
 	for {
 		orders := <-receiver
 		orderPanel[orders.Floor][orders.Button] = OT_Order
+		elevio.SetButtonLamp(orders.Button, orders.Floor, true)
 	}
 }
 
@@ -58,7 +59,7 @@ func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection e
 	return cost
 }
 
-func PriorityOrder(orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
+func priorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
 	//Calculate for given elevator which order it should take using calculateOrderCost for each current order.
 	var priorityOrder elevio.ButtonEvent = elevio.ButtonEvent{
 		Floor:  -1,
@@ -81,6 +82,12 @@ func PriorityOrder(orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirecti
 		}
 	}
 	return priorityOrder
+}
+
+func PollPriorityOrder(priOrderChan chan elevio.ButtonEvent, orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
+	for {
+		priOrderChan <- priorityOrder(&orderPanel, elevFloor, elevDirection)
+	}
 }
 
 func intAbs(x int) int {

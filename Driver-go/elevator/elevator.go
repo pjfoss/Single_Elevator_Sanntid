@@ -19,10 +19,14 @@ func (e Elevator) GetCurrentFloor() int {
 func (e Elevator) SetFloor(floor int) {
 	e.currentFloor = floor
 }
+func (e Elevator) SetDirection(dir elevio.MotorDirection) {
+	e.direction = dir
+}
 
-func (e *Elevator) driveTo(order elevio.ButtonEvent) {
+func (e *Elevator) DriveTo(order elevio.ButtonEvent) {
 	floor := order.Floor
 	if e.GetCurrentFloor() == floor {
+		elevio.SetMotorDirection(elevio.MD_Stop)
 		return
 	}
 	if e.GetCurrentFloor() < floor {
