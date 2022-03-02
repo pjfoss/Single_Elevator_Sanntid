@@ -22,10 +22,15 @@ const (
 func UpdateOrders(orderPanel *[ConstNumFloors][3]int, receiver <-chan elevio.ButtonEvent) {
 	//Updates orderPanel matrix when receiver channel gets button calls
 	for {
-		orders := <-receiver
-		orderPanel[orders.Floor][orders.Button] = OT_Order
-		elevio.SetButtonLamp(orders.Button, orders.Floor, true)
+		order := <-receiver
+		SetOrder(orderPanel, order.Floor, int(order.Button), OT_Order)
 	}
+}
+
+func SetOrder(orderPanel *[ConstNumFloors][3]int, floor int, button int, orderType int) {
+	lampValue := (orderType != OT_NoOrder)
+	orderPanel[floor][button] = orderType
+	elevio.SetButtonLamp(elevio.ButtonType(button), floor, lampValue)
 }
 
 func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection elevio.MotorDirection) int {
