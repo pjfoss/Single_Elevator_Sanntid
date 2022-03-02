@@ -3,6 +3,7 @@ package orders
 import (
 	"Driver-go/elevator"
 	"Driver-go/elevio"
+	"fmt"
 	"time"
 )
 
@@ -87,6 +88,7 @@ func PriorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirect
 					Floor:  floor,
 					Button: elevio.ButtonType(orderPanel[floor][btn]),
 				}
+				fmt.Println("ORDER AT: ", order)
 				orderCost := calculateOrderCost(order, elevFloor, elevDirection)
 				if orderCost < minCost {
 					minCost = orderCost
@@ -101,12 +103,11 @@ func PriorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirect
 
 func PollPriorityOrder(priOrderChan chan elevio.ButtonEvent, orderPanel *[ConstNumFloors][3]int, myElevator *elevator.Elevator) {
 	for {
-		//fmt.Printf("Yoo")
 		order := PriorityOrder(orderPanel, myElevator.GetCurrentFloor(), myElevator.GetDirection())
 		if order.Floor != -1 {
 			priOrderChan <- order
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(time.Millisecond)
 	}
 }
 
