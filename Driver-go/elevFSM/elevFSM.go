@@ -10,8 +10,10 @@ import (
 
 func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.ConstNumFloors][3]int) {
 
-	init := 0
-	myElevator.SetFloor(numFloors + 1)
+	elevio.SetMotorDirection(elevio.MD_Down)
+
+	var priorityOrder elevio.ButtonEvent
+	var doorOpen bool = false
 
 	for f := 0; f < numFloors; f++ {
 		for b := 0; b < 3; b++ {
@@ -35,65 +37,49 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 	for {
 		select {
 
-		case p := <-priOrderChan:
-			myElevator.DriveTo(p)
+		case a := <-priOrderChan:
+			fmt.Println(a)
+			if !doorOpen {
+				priorityOrder = a
+				myElevator.DriveTo(a)
+			}
 
 		case a := <-drv_buttons:
-			fmt.Printf("%+v\n", a)
+			fmt.Println(a)
 			orders.SetOrder(&orderPanel, a.Floor, int(a.Button), orders.OT_Order)
+			elevio.SetButtonLamp(a.Button, a.Floor, true)
 
 		case a := <-drv_floors:
-			fmt.Printf("%+v\n", a)
+			fmt.Println(a)
 			myElevator.SetFloor(a)
 			elevio.SetFloorIndicator(a)
-
-			if init == 0 {
-				elevio.SetMotorDirection(elevio.MD_Stop)
-				init = 1
+			event := elevio.ButtonEvent{
+				Floor:  a,
+				Button: elevio.BT_Cab,
 			}
-
-			bt := elevio.BT_HallDown
 			if myElevator.GetDirection() == elevio.MD_Up {
-				bt = int(elevio.BT_HallUp)
+				event.Button = elevio.BT_HallUp
+			} else if myElevator.GetDirection() == elevio.MD_Down {
+				event.Button = elevio.BT_HallDown
 			}
-			if orders.GetOrder(&orderPanel, a, bt) == orders.OT_Order {
-				elevio.SetMotorDirection(elevio.MD_Stop)
+			if priorityOrder.Floor == a && (priorityOrder.Button == event.Button || priorityOrder.Button == elevio.BT_Cab) {
+				doorOpen = true
+				myElevator.SetDirection(elevio.MD_Stop)
 				time.Sleep(3 * time.Second)
-				orders.SetOrder(&orderPanel, a, bt, orders.OT_NoOrder)
-				elevio.SetButtonLamp(elevio.ButtonType(bt), a, false)
-				orders.SetOrder(&orderPanel, a, int(elevio.BT_Cab), orders.OT_NoOrder)
+				orders.SetOrder(&orderPanel, a, int(elevio.BT_HallUp), orders.OT_NoOrder)
+				elevio.SetButtonLamp(event.Button, a, false)
 				elevio.SetButtonLamp(elevio.BT_Cab, a, false)
-			} else if orders.GetOrder(&orderPanel, a, int(elevio.BT_Cab)) == orders.OT_Order {
-				elevio.SetMotorDirection(elevio.MD_Stop)
-				time.Sleep(3 * time.Second)
-				orders.SetOrder(&orderPanel, a, int(elevio.BT_Cab), orders.OT_NoOrder)
-				elevio.SetButtonLamp(elevio.BT_Cab, a, false)
+				doorOpen = false
 			}
-
-			if a == numFloors-1 {
-				myElevator.SetDirection(elevio.MD_Down)
-				elevio.SetMotorDirection(elevio.MD_Down)
-			} else if a == 0 {
-				myElevator.SetDirection(elevio.MD_Up)
-				elevio.SetMotorDirection(elevio.MD_Up)
+			if myElevator.GetCurrentFloor() == 0 || myElevator.GetCurrentFloor() == numFloors-1 {
+				myElevator.SetDirection(elevio.MD_Stop)
 			}
 
 		case a := <-drv_obstr:
-			fmt.Printf("%+v\n", a)
-			if a {
-				elevio.SetMotorDirection(elevio.MD_Stop)
-			} else {
-				elevio.SetMotorDirection(myElevator.GetDirection())
-			}
+			fmt.Println(a)
 
 		case a := <-drv_stop:
-			fmt.Printf("%+v\n", a)
-
-			// default:
-			// 	if myElevator.GetCurrentFloor() > numFloors && init == 0 {
-			// 		myElevator.SetDirection(elevio.MD_Down)
-			// 		elevio.SetMotorDirection(elevio.MD_Down)
-			// 	}
+			fmt.Println(a)
 		}
 	}
 }

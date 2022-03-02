@@ -106,7 +106,7 @@ func PollPriorityOrder(priOrderChan chan elevio.ButtonEvent, orderPanel *[ConstN
 		if order.Floor != -1 {
 			priOrderChan <- order
 		}
-		time.Sleep(time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
