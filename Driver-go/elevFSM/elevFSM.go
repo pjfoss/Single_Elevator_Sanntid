@@ -38,6 +38,7 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 		select {
 
 		case a := <-priOrderChan:
+			fmt.Println(a)
 			if !doorOpen {
 				priorityOrder = a
 				myElevator.DriveTo(a)
@@ -46,7 +47,6 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 		case a := <-drv_buttons:
 			fmt.Println(a)
 			orders.SetOrder(&orderPanel, a.Floor, int(a.Button), orders.OT_Order)
-			elevio.SetButtonLamp(a.Button, a.Floor, true)
 
 		case a := <-drv_floors:
 			myElevator.SetFloor(a)
@@ -60,15 +60,12 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 			} else if myElevator.GetDirection() == elevio.MD_Down {
 				event.Button = elevio.BT_HallDown
 			}
-			fmt.Println("PRIORITY: ", priorityOrder)
-			fmt.Println("ELEVATOR DIRECTION: ", myElevator.GetDirection())
 			if priorityOrder.Floor == a && (priorityOrder.Button == event.Button || priorityOrder.Button == elevio.BT_Cab) {
 				doorOpen = true
 				elevio.SetMotorDirection(elevio.MD_Stop)
 				time.Sleep(3 * time.Second)
-				orders.SetOrder(&orderPanel, a, int(elevio.BT_HallUp), orders.OT_NoOrder)
-				elevio.SetButtonLamp(event.Button, a, false)
-				elevio.SetButtonLamp(elevio.BT_Cab, a, false)
+				orders.SetOrder(&orderPanel, a, int(event.Button), orders.OT_NoOrder)
+				orders.SetOrder(&orderPanel, a, int(elevio.BT_Cab), orders.OT_NoOrder)
 				doorOpen = false
 			}
 			if myElevator.GetCurrentFloor() == 0 {
