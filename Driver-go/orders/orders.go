@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"Driver-go/elevator"
 	"Driver-go/elevio"
 	"time"
 )
@@ -25,6 +26,10 @@ func UpdateOrders(orderPanel *[ConstNumFloors][3]int, receiver <-chan elevio.But
 		order := <-receiver
 		SetOrder(orderPanel, order.Floor, int(order.Button), OT_Order)
 	}
+}
+
+func GetOrder(orderPanel *[ConstNumFloors][3]int, floor int, button int) int {
+	return orderPanel[floor][button]
 }
 
 func SetOrder(orderPanel *[ConstNumFloors][3]int, floor int, button int, orderType int) {
@@ -67,7 +72,7 @@ func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection e
 	return cost
 }
 
-func priorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
+func PriorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
 	//Calculate for given elevator which order it should take using calculateOrderCost for each current order.
 	//fmt.Printf("Y00")
 	var priorityOrder elevio.ButtonEvent = elevio.ButtonEvent{
@@ -94,10 +99,13 @@ func priorityOrder(orderPanel *[ConstNumFloors][3]int, elevFloor int, elevDirect
 	return priorityOrder
 }
 
-func PollPriorityOrder(priOrderChan chan elevio.ButtonEvent, orderPanel [ConstNumFloors][3]int, elevFloor int, elevDirection elevio.MotorDirection) elevio.ButtonEvent {
+func PollPriorityOrder(priOrderChan chan elevio.ButtonEvent, orderPanel *[ConstNumFloors][3]int, myElevator *elevator.Elevator) {
 	for {
 		//fmt.Printf("Yoo")
-		priOrderChan <- priorityOrder(&orderPanel, elevFloor, elevDirection)
+		order := PriorityOrder(orderPanel, myElevator.GetCurrentFloor(), myElevator.GetDirection())
+		if order.Floor != -1 {
+			priOrderChan <- order
+		}
 		time.Sleep(time.Millisecond)
 	}
 }
