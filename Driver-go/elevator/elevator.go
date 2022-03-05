@@ -23,14 +23,25 @@ func (e *Elevator) SetDirection(dir elevio.MotorDirection) {
 }
 
 func (e *Elevator) DriveTo(order elevio.ButtonEvent) {
-	floor := order.Floor
-	dir := elevio.MotorDirection(elevio.MD_Stop)
-	if e.GetCurrentFloor() < floor {
-		dir = elevio.MD_Up
-		e.SetDirection(dir)
-	} else if e.GetCurrentFloor() > floor {
-		dir = elevio.MD_Down
-		e.SetDirection(dir)
+
+	var elevDir elevio.MotorDirection
+	var motorDir elevio.MotorDirection
+
+	if e.GetCurrentFloor() < order.Floor {
+		motorDir = elevio.MD_Up
+		elevDir = motorDir
+	} else if e.GetCurrentFloor() > order.Floor {
+		motorDir = elevio.MD_Down
+		elevDir = motorDir
+	} else {
+		motorDir = elevio.MD_Stop
+		if order.Button == elevio.BT_HallUp {
+			elevDir = elevio.MD_Up
+		} else if order.Button == elevio.BT_HallDown {
+			elevDir = elevio.MD_Down
+		}
 	}
-	elevio.SetMotorDirection(dir)
+
+	e.SetDirection(elevDir)
+	elevio.SetMotorDirection(motorDir)
 }
