@@ -14,6 +14,7 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 
 	var doorOpen bool = false
 	var moving bool = true
+	var obs bool = false
 
 	var priorityOrder elevio.ButtonEvent
 	priorityOrder.Floor = -1
@@ -66,6 +67,7 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 					}
 					//open doors
 					doorOpen = true
+					elevio.SetDoorOpenLamp(doorOpen)
 					//fmt.Println("pri >> door open")
 					//timer
 					time.Sleep(3 * time.Second)
@@ -75,7 +77,10 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 					//set priority to an invalid order
 					priorityOrder.Floor = -1
 					//open door
-					doorOpen = false
+					if !obs {
+						doorOpen = false
+						elevio.SetDoorOpenLamp(doorOpen)
+					}
 					//fmt.Println("pri >> door closed")
 				}
 			}
@@ -119,7 +124,13 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 			}
 
 		case a := <-drv_obstr:
-			fmt.Println(a)
+			obs = a
+			if obs && !moving {
+				doorOpen = true
+				elevio.SetDoorOpenLamp(doorOpen)
+			} else {
+				doorOpen = false
+			}
 
 		case a := <-drv_stop:
 			fmt.Println(a)
