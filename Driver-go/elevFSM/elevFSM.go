@@ -55,7 +55,9 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 			}
 			if !doorOpen && priorityOrder.Floor != -1 {
 				//drive to the order
-				myElevator.DriveTo(priorityOrder)
+				if myElevator.GetCurrentFloor() != priorityOrder.Floor {
+					myElevator.DriveTo(priorityOrder)
+				}
 				if !moving && priorityOrder.Floor == myElevator.GetCurrentFloor() {
 					if priorityOrder.Button == elevio.BT_HallUp {
 						myElevator.SetDirection(elevio.MD_Up)
