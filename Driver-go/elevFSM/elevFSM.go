@@ -42,10 +42,17 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 		select {
 
 		case a := <-priOrderChan:
-			// fmt.Println("pri >> PRIORITY: " + fmt.Sprint(priorityOrder))
-			// fmt.Println("pri >> ELEVATOR DIRECTION: " + fmt.Sprint(myElevator.GetDirection()))
+			if a != priorityOrder {
+				fmt.Println("pri >> PRIORITY: " + fmt.Sprint(priorityOrder))
+				fmt.Println("pri >> ELEVATOR DIRECTION: " + fmt.Sprint(myElevator.GetDirection()))
+			}
 
 			priorityOrder = a
+			if priorityOrder.Floor != myElevator.GetCurrentFloor() && priorityOrder.Floor != -1 {
+				//stop moving
+				moving = true
+				//fmt.Println("floor >> moving")
+			}
 			if !doorOpen && priorityOrder.Floor != -1 {
 				//drive to the order
 				myElevator.DriveTo(priorityOrder)
@@ -84,35 +91,19 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 					//fmt.Println("pri >> door closed")
 				}
 			}
-			if priorityOrder.Floor != myElevator.GetCurrentFloor() && priorityOrder.Floor != -1 {
-				//stop moving
-				moving = true
-				//fmt.Println("floor >> moving")
-			} else {
-				moving = false
-				//fmt.Println("floor >> not moving")
-			}
 
 		case a := <-drv_buttons:
 			orders.SetOrder(&orderPanel, a.Floor, int(a.Button), orders.OT_Order)
 
 		case a := <-drv_floors:
 
-			//switch direction if at top or bottom floor
-			if myElevator.GetCurrentFloor() == 0 {
-				myElevator.SetDirection(elevio.MD_Up)
-				elevio.SetMotorDirection(elevio.MD_Stop)
-			} else if myElevator.GetCurrentFloor() == numFloors-1 {
-				myElevator.SetDirection(elevio.MD_Down)
-				elevio.SetMotorDirection(elevio.MD_Stop)
-			}
-
-			//fmt.Println("floor >> " + fmt.Sprint(orderPanel))
-			//updage the floor
+			fmt.Println("floor >> " + fmt.Sprint(orderPanel))
+			//update the floor
 			myElevator.SetFloor(a)
 			//turn on the floor light
 			elevio.SetFloorIndicator(a)
 
+			myElevator.DriveTo(priorityOrder)
 			//if this floor has an order
 			if priorityOrder.Floor != a && priorityOrder.Floor != -1 {
 				//stop moving
@@ -120,7 +111,16 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 				//fmt.Println("floor >> moving")
 			} else {
 				moving = false
+				elevio.SetMotorDirection(elevio.MD_Stop)
 				//fmt.Println("floor >> not moving")
+			}
+			//switch direction if at top or bottom floor
+			if myElevator.GetCurrentFloor() == 0 {
+				myElevator.SetDirection(elevio.MD_Up)
+				elevio.SetMotorDirection(elevio.MD_Stop)
+			} else if myElevator.GetCurrentFloor() == numFloors-1 {
+				myElevator.SetDirection(elevio.MD_Down)
+				elevio.SetMotorDirection(elevio.MD_Stop)
 			}
 
 		case a := <-drv_obstr:

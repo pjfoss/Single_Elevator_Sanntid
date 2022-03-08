@@ -15,7 +15,7 @@ const (
 )
 const (
 	//CT = CostType
-	CT_DistanceCost        = 10
+	CT_DistanceCost        = 150
 	CT_DirSwitchCost       = 100
 	CT_DoubleDirSwitchCost = 1000
 )
@@ -41,10 +41,10 @@ func SetOrder(orderPanel *[ConstNumFloors][3]int, floor int, button int, orderTy
 func calculateOrderCost(order elevio.ButtonEvent, elevFloor int, elevDirection elevio.MotorDirection) int {
 	// Based on costed scenarios: on the order floor,above or below floor, type of requirede turns - calculate the cost of the given order
 	var cost int = 0
-	orderFloor := order.Floor
-	if elevFloor == orderFloor {
+	if order.Floor == elevFloor && ((order.Button == elevio.BT_HallUp && elevDirection == elevio.MD_Up) || (order.Button == elevio.BT_HallDown && elevDirection == elevio.MD_Down) || order.Button == elevio.BT_Cab) {
 		return cost
 	}
+	orderFloor := order.Floor
 	orderDirection := 0
 	if elevFloor < orderFloor {
 		orderDirection = int(elevio.MD_Up)
