@@ -61,9 +61,18 @@ func RunElevFSM(numFloors int, myElevator elevator.Elevator, orderPanel [orders.
 				time.Sleep(3 * time.Second)
 				orders.SetOrder(&orderPanel, a, bt, orders.OT_NoOrder)
 				elevio.SetButtonLamp(elevio.ButtonType(bt), a, false)
-				orders.SetOrder(&orderPanel, a, int(elevio.BT_Cab), orders.OT_NoOrder)
-				elevio.SetButtonLamp(elevio.BT_Cab, a, false)
-			} else if orders.GetOrder(&orderPanel, a, int(elevio.BT_Cab)) == orders.OT_Order {
+				a {
+					elevio.SetMotorDirection(elevio.MD_Stop)
+				} else {
+					elevio.SetMotorDirection(myElevator.GetDirection())
+				}
+	
+			case a := <-drv_stop:
+				fmt.Printf("%+v\n", a)
+	
+				// default:
+				// 	if myElevator.GetCurrentFloor() > numFloors && init == 0 {
+				// else if orders.GetOrder(&orderPanel, a, int(elevio.BT_Cab)) == orders.OT_Order {
 				elevio.SetMotorDirection(elevio.MD_Stop)
 				time.Sleep(3 * time.Second)
 				orders.SetOrder(&orderPanel, a, int(elevio.BT_Cab), orders.OT_NoOrder)
